@@ -1,15 +1,8 @@
 import requests 
-endpoint = "https://httpbin.org/status/200/"
-endpoint = "https://httpbin.org/anything"
-get_response=requests.get(endpoint,json={"query":"hello world "})        #API Method
-print(get_response.text) # print raw text 
-
-# client through python 
-
-# Http request -> HTML
-# REST API HTTP request -> JSON(javascript object notation)~ dcict 
-
-# json function have two types .load() is used  to covert json into python object for dumps() for viceversa and json () for both 
+endpoint = " http://127.0.0.1:8000/api/"#http://localhost:8000/
+get_response=requests.get(endpoint,params={"abc":123},json={"querry":"hello world"})        #API Method
+#params is used for the paramete for example http://localhost:8000/api/?abc=123
+# request->httprequest->django 
 print(get_response.json())
 
 print (get_response.status_code)
