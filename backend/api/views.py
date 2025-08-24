@@ -1,64 +1,38 @@
-from django.shortcuts import render
-import json
-# Create your views here.
-from django.http import JsonResponse,HttpResponse
-def api_home(request,*args,**kwargs):
-    body=request.body# byte string of json data 
-    # print(body)
-    try:
-        data=json.loads(body)
-    except Exception:
-        pass
-    print(data.keys())
-    data['headers']=dict(request.headers) #request metadata 
-    print(request.headers)
-    data['content_type']=request.content_type
-
-    data['params']=dict(request.GET)
-    print(request.content_type)
-    # print(request.GET)
-    # print(request.POST)
-
-    return JsonResponse(data)
-
-from products.models import Product
-
-def product_home(request,*args,**kwargs ):
-    model_data=Product.objects.all().order_by("?").first()
-    data ={}
-    if model_data:
-        data['title']=model_data.title
-        data['content']=model_data.content
-        data['price']=model_data.price
-    return JsonResponse(data)
-
-# serialization  above for each data 
-
-# model instance  (model_data )
-# turn a python dict
-# return json to my client 
-
-# using django forms
-from django.forms.models import model_to_dict
-# def product_home_using_modelstodict(request,*arags,**kwargs):
+from django.forms.models import model_to_dict 
+from products.models import Product 
+from rest_framework.response import Response
+from rest_framework.decorators import api_view
+# @api_view(["GET"])
+# def api_home(request,*arags,**kwargs):
+#     """DRF API View"""
 #     model_data=Product.objects.all().order_by("?").first()
 #     data={}
 #     if model_data:
-#         data =model_to_dict(model_data,fields=['id','title','price'])
-#         print(data)
-#         json_data_str=json.dumps(data)
-#     # return JsonResponse(data)
-#     return HttpResponse(json_data_str,headers={"content-type":"application/jsson"})
+#         data =model_to_dict(model_data,fields=['id','title','price','sale_price'])
+#     return Response(data,status=200)
+
+from products.serializers import ProductSerializer
+
+# @api_view(["GET"])
+# def api_home(request,*arags,**kwargs):
+#     """DRF API View"""
+#     instance=Product.objects.all().order_by("?").first()
+#     data={}
+#     if instance:
+#         # data =model_to_dict(instance,fields=['id','title','price','sale_price'])
+#         data=ProductSerializer(instance).data
+#     return Response(data,status=200)
 
 
-#from rest framework
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-@api_view(["GET"])
-def product_home_using_modelstodict(request,*arags,**kwargs):
+
+@api_view(["POST"])
+def api_home(request,*arags,**kwargs):
     """DRF API View"""
-    model_data=Product.objects.all().order_by("?").first()
-    data={}
-    if model_data:
-        data =model_to_dict(model_data,fields=['id','title','price'])
-    return Response(data,status=200)
+    data=request.data
+    serializer=ProductSerializer(data=data)
+    if serializer.is_valid(raise_exception=True):
+        productserializer=serializer.save()
+        data=serializer.data
+        print(productserializer)
+        return Response(productserializer.data,status=200)
+    return Response({"invalid":"required data not given"},status=404)
